@@ -1,4 +1,5 @@
 #include <SDL.h>		// Always needs to be included for an SDL app
+#include <SDL_image.h>	//Needs to be included to use images
 
 //Game general information
 #define SCREEN_WIDTH 800
@@ -18,10 +19,14 @@ int main(int, char*[]) {
 	if (renderer == nullptr) throw "No es pot inicialitzar SDL_Renderer";
 
 	// --- SPRITES ---
-
+	const Uint8 imgFlags{ IMG_INIT_PNG | IMG_INIT_JPG };
+	if (!(IMG_Init(imgFlags) & imgFlags)) throw "Error: SDL_image init";
 		// --- Animated Sprite ---
 
 	// --- TEXT ---
+	SDL_Texture *bgTexture{ IMG_LoadTexture(renderer, "../../res/img/bg.jpg") };
+	if (bgTexture == nullptr) throw "No s'han pogut crear les textures";
+	SDL_Rect bgRect{ 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
 
 	// --- AUDIO ---
 
@@ -43,16 +48,19 @@ int main(int, char*[]) {
 		// DRAW
 			//Background
 		SDL_RenderClear(renderer);
+		SDL_RenderCopy(renderer, bgTexture, nullptr, &bgRect);
 			//Animated Sprite
 		SDL_RenderPresent(renderer);
 
 	}
 
 	// --- DESTROY ---
+	SDL_DestroyTexture(bgTexture);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 
 	// --- QUIT ---
+	IMG_Quit();
 	SDL_Quit();
 	return 0;
 }
