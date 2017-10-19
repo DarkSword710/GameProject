@@ -6,6 +6,7 @@
 //Game general information
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
+#define FPS 60
 
 int main(int, char*[]) {
 
@@ -28,12 +29,23 @@ int main(int, char*[]) {
 	if (bgTexture == nullptr) throw "No s'han pogut crear les textures";
 	SDL_Rect bgRect{ 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
 
-	SDL_Texture *playerTexture{ IMG_LoadTexture(renderer, "../../res/img/kintoun.png") };
+	/*SDL_Texture *playerTexture{ IMG_LoadTexture(renderer, "../../res/img/kintoun.png") };
 	if (playerTexture == nullptr) throw "No s'han pogut crear les textures";
-	SDL_Rect playerRect{ 0, 0, 350, 189 };
+	SDL_Rect playerRect{ 0, 0, 350, 189 };*/
 	SDL_Rect playerTarget{ 0, 0, 100, 100 };
 
 		// --- Animated Sprite ---
+	SDL_Texture *playerTexture{ IMG_LoadTexture(renderer, "../../res/img/sp01.png") };
+	SDL_Rect playerRect, playerPosition;
+	int textWidth, textHeight, frameWidth, frameHeight;
+	SDL_QueryTexture(playerTexture, NULL, NULL, &textWidth, &textHeight);
+	frameWidth = textWidth / 6;
+	frameHeight = textHeight / 1;
+	playerPosition.x = playerPosition.y = 0;
+	playerRect.x = playerRect.y = 0;
+	playerPosition.h = playerRect.h = frameHeight;
+	playerPosition.w = playerRect.w = frameWidth;
+	int frameTime = 0;
 
 	// --- TEXT ---
 	if (TTF_Init() != 0) throw "No es pot inicialitzar SDL_ttf";
@@ -43,11 +55,12 @@ int main(int, char*[]) {
 	SDL_Texture *textTexture{ SDL_CreateTextureFromSurface(renderer, tmpSurf) };
 	SDL_Rect textRect{ 100, 50, tmpSurf->w, tmpSurf->h };
 	SDL_FreeSurface(tmpSurf);
-	TTF_CloseFont(font);
 
-	/*TTF_Font *font{ TTF_OpenFont("../../res/ttf/saiyan.ttf", 80) };
-	SDL_Surface *tmpSurf{ TTF_RenderText_Blended(font, "My first SDL game", SDL_Color{ 216, 255, 202, 255 }) };
-	SDL_Texture *textTexture{ SDL_CreateTextureFromSurface(renderer, tmpSurf) };*/
+	SDL_Surface *tmpSurfHover{ TTF_RenderText_Blended(font, "My first SDL game", SDL_Color{ 216, 255, 202, 255 }) };
+	SDL_Texture *textTextureHover{ SDL_CreateTextureFromSurface(renderer, tmpSurfHover) };
+	SDL_FreeSurface(tmpSurf);
+	SDL_FreeSurface(tmpSurfHover);
+	TTF_CloseFont(font);
 
 	// --- AUDIO ---
 	const Uint8 mixFlags{ MIX_INIT_MP3 | MIX_INIT_OGG };
@@ -64,11 +77,17 @@ int main(int, char*[]) {
 	Mix_PlayingMusic();Boolean
 	Mix_PauseMusic();Pause
 	Mix_PausedMusic();Boolean
+	Mix_HaltMusic();
+	Mix_ResumeMusic();
+
+	StarUML;
 	*/
 
 	// --- GAME LOOP ---
 	SDL_Event event;
 	bool isRunning = true;
+	bool mouseClicked = false;
+	bool hover = false;
 	while (isRunning){
 		// HANDLE EVENTS
 		while (SDL_PollEvent(&event)) {
@@ -79,22 +98,55 @@ int main(int, char*[]) {
 				playerTarget.x = event.motion.x - 175;
 				playerTarget.y = event.motion.y - 94;
 				break;
+			case SDL_MOUSEBUTTONDOWN:
+				mouseClicked = true;
+				break;
 			default:;
 			}
 		}
 
 		// UPDATE
-		playerRect.x += (playerTarget.x - playerRect.x) / 10;
-		playerRect.y += (playerTarget.y - playerRect.y) / 10;
+		frameTime++;
+		if (FPS / frameTime <= 9) {
+			frameTime = 0;
+			playerRect.x += frameWidth;
+			if (playerRect.x >= textWidth) {
+				playerRect.x = 0;
+			}
+		}
+		//playerRect.x += (playerTarget.x - playerRect.x) / 10;
+		//playerRect.y += (playerTarget.y - playerRect.y) / 10;
+		if (playerTarget.x >= textRect.x && playerTarget.y >= textRect.y && playerTarget.x <= textRect.x + textRect.w && playerTarget.y <= textRect.y + textRect.h) {
+			hover = true;
+			if (mouseClicked) {
+				if (Mix_PlayingMusic()) {
+					Mix_HaltMusic();
+				}
+				else {
+					Mix_PlayMusic(soundtrack, -1);
+				}
+			}
+		}
+		else {
+			hover = false;
+		}
+		mouseClicked = false;
 
 		// DRAW
 			//Background
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, bgTexture, nullptr, &bgRect);
-		SDL_RenderCopy(renderer, playerTexture, nullptr, &playerRect);
-		SDL_RenderCopy(renderer, textTexture, nullptr, &textRect);
+		//SDL_RenderCopy(renderer, playerTexture, nullptr, &playerRect);
+		if (hover) {
+			SDL_RenderCopy(renderer, textTextureHover, nullptr, &textRect);
+		}
+		else {
+			SDL_RenderCopy(renderer, textTexture, nullptr, &textRect);
+		}
+		
 		
 			//Animated Sprite
+		SDL_RenderCopy(renderer, playerTexture, &playerRect, &playerPosition);
 		SDL_RenderPresent(renderer);
 
 	}
