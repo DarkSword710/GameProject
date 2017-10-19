@@ -2,6 +2,8 @@
 #include <SDL_image.h>	//Needs to be included to use images
 #include <SDL_ttf.h>	//Needs to be included to use text and fonts
 #include <SDL_mixer.h>	//Needs to be included to use audio tracks and SFX
+#include <iostream>
+#include <time.h> //Needed for deltaTime
 
 //Game general information
 #define SCREEN_WIDTH 800
@@ -9,7 +11,7 @@
 #define FPS 60
 
 int main(int, char*[]) {
-
+#pragma region Inizialización
 	// --- INIT ---
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) throw "No es pot inicialitzar SDL subsystems";
 
@@ -73,6 +75,11 @@ int main(int, char*[]) {
 	Mix_VolumeMusic(MIX_MAX_VOLUME / 2);
 	Mix_PlayMusic(soundtrack, -1);
 
+	// --- TIME ---
+	clock_t lastTime = clock();
+	float timeDown = 10.;
+	float deltaTime = 0;
+
 	/*
 	Mix_PlayingMusic();Boolean
 	Mix_PauseMusic();Pause
@@ -82,21 +89,25 @@ int main(int, char*[]) {
 
 	StarUML;
 	*/
+#pragma endregion
 
+#pragma region GameLoop
 	// --- GAME LOOP ---
 	SDL_Event event;
 	bool isRunning = true;
 	bool mouseClicked = false;
 	bool hover = false;
 	while (isRunning){
+
+	#pragma region HandleEvents
 		// HANDLE EVENTS
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 			case SDL_QUIT:		isRunning = false; break;
 			case SDL_KEYDOWN:	if (event.key.keysym.sym == SDLK_ESCAPE) isRunning = false; break;
 			case SDL_MOUSEMOTION:
-				playerTarget.x = event.motion.x - 175;
-				playerTarget.y = event.motion.y - 94;
+				playerTarget.x = event.motion.x;
+				playerTarget.y = event.motion.y;
 				break;
 			case SDL_MOUSEBUTTONDOWN:
 				mouseClicked = true;
@@ -104,8 +115,16 @@ int main(int, char*[]) {
 			default:;
 			}
 		}
+	#pragma endregion
 
+	#pragma region Update
 		// UPDATE
+		deltaTime = (clock() - lastTime);
+		lastTime = clock();
+		deltaTime /= CLOCKS_PER_SEC;
+		timeDown -= deltaTime;
+		std::cout << timeDown << std::endl;
+
 		frameTime++;
 		if (FPS / frameTime <= 9) {
 			frameTime = 0;
@@ -131,7 +150,9 @@ int main(int, char*[]) {
 			hover = false;
 		}
 		mouseClicked = false;
+	#pragma endregion
 
+	#pragma region Draw
 		// DRAW
 			//Background
 		SDL_RenderClear(renderer);
@@ -148,9 +169,11 @@ int main(int, char*[]) {
 			//Animated Sprite
 		SDL_RenderCopy(renderer, playerTexture, &playerRect, &playerPosition);
 		SDL_RenderPresent(renderer);
-
+	#pragma endregion
 	}
+#pragma endregion
 
+#pragma region Destroy
 	// --- DESTROY ---
 	Mix_CloseAudio();
 	SDL_DestroyTexture(bgTexture);
@@ -158,11 +181,48 @@ int main(int, char*[]) {
 	SDL_DestroyTexture(textTexture);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
+#pragma endregion
 
+#pragma region Quit
 	// --- QUIT ---
 	IMG_Quit();
 	TTF_Quit();
 	Mix_Quit();
 	SDL_Quit();
 	return 0;
+#pragma endregion
 }
+
+/*
+enum class GameState { PLAY, EXIT, MENU };
+// -- GAME LOOP ---
+SDL_event event;
+GameState gamestat = GameState::MENU;
+while (gamestat != GameState::EXIT) {
+	while (SDL_PollEvent(&event)) {
+		switch (event.type) {
+			case SDL_QUIT:
+			gamestat = GameState::EXIT;
+			break;
+		}
+	}
+}
+
+//Game_Loop//
+switch (gamestat)
+{
+	case GameState::PLAY:
+		//EventHandlePlay();
+		//UpdatePlay();
+		//DrawPlay();
+		break;
+	case GameState::EXIT:
+		break;
+	case GameState::MENU:
+		//EventHandleMenu();
+		//UpdateMenu();
+		//DrawMenu();
+	break;
+}
+//Game_Loop//
+*/
