@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<enemigos>
+
+	<enemigo name="Naganadel">
+		<vitalidad>73</vitalidad>
+		<dano>127</dano>
+		<defensa>73</defensa>
+		<frecuenciaAtt>121</frecuenciaAtt>
+		<experiencia>1250</experiencia>
+	</enemigo>
+	
+	<enemigo name="Stakataka">
+		<vitalidad>61</vitalidad>
+		<dano>131</dano>
+		<defensa>211</defensa>
+		<frecuenciaAtt>13</frecuenciaAtt>
+		<experiencia>1250</experiencia>
+	</enemigo>
+	
+	<enemigo name="Charjabug">
+		<vitalidad>57</vitalidad>
+		<dano>82</dano>
+		<defensa>95</defensa>
+		<frecuenciaAtt>36</frecuenciaAtt>
+		<experiencia>1000</experiencia>
+	</enemigo>
+	
+	<enemigo name="Blacephalon">
+		<vitalidad>53</vitalidad>
+		<dano>151</dano>
+		<defensa>53</defensa>
+		<frecuenciaAtt>107</frecuenciaAtt>
+		<experiencia>1250</experiencia>
+	</enemigo>
+	
+</enemigos>
